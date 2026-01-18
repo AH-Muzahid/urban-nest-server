@@ -2,6 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const propertyRoutes = require('./routes/propertyRoutes');
 const authRoutes = require('./routes/authRoutes');
+const inquiryRoutes = require('./routes/inquiryRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
+const userRoutes = require('./routes/userRoutes');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 
 const app = express();
@@ -27,13 +30,19 @@ app.get('/', (req, res) => {
         version: '1.0.0',
         endpoints: {
             auth: '/api/auth',
-            properties: '/api/properties'
+            properties: '/api/properties',
+            inquiries: '/api/inquiries',
+            users: '/api/users',
+            reviews: '/api/reviews'
         }
     });
 });
 
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
+app.use('/api/inquiries', inquiryRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // 404 handler
 app.use((req, res) => {

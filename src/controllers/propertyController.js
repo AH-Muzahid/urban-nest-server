@@ -5,7 +5,7 @@ const Property = require('../models/Property');
 // @access  Public
 exports.getProperties = async (req, res) => {
     try {
-        const { search, type, status, minPrice, maxPrice, location } = req.query;
+        const { search, type, status, minPrice, maxPrice, location, page = 1, limit = 9 } = req.query;
 
         let query = {};
 
@@ -21,7 +21,11 @@ exports.getProperties = async (req, res) => {
 
         // Status filter
         if (status) {
-            query.status = status;
+            if (['sale', 'rent'].includes(status)) {
+                query.listingType = status;
+            } else {
+                query.status = status;
+            }
         }
 
         // Price range filter
@@ -36,11 +40,19 @@ exports.getProperties = async (req, res) => {
             query.location = { $regex: location, $options: 'i' };
         }
 
+        const count = await Property.countDocuments(query);
         const properties = await Property.find(query)
             .populate('owner', 'name email')
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
             .sort({ createdAt: -1 });
 
-        res.json(properties);
+        res.json({
+            properties,
+            totalPages: Math.ceil(count / limit),
+            currentPage: Number(page),
+            totalProperties: count
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -156,7 +168,7 @@ exports.getFeaturedProperties = async (req, res) => {
     try {
         const properties = await Property.find({ featured: true })
             .populate('owner', 'name email')
-            .limit(6)
+            .limit(8)
             .sort({ createdAt: -1 });
 
         res.json(properties);

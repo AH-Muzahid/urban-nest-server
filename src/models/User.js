@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'admin'],
+        enum: ['user', 'agent', 'admin'],
         default: 'user'
     },
     phone: {
@@ -33,6 +33,31 @@ const userSchema = new mongoose.Schema({
     avatar: {
         type: String,
         default: ''
+    },
+    wishlist: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Property'
+    }],
+    // Profile Fields
+    bio: {
+        type: String,
+        maxlength: 500
+    },
+    specialties: [{
+        type: String
+    }],
+    license: {
+        type: String
+    },
+    experience: {
+        type: Number
+    },
+    location: {
+        type: String
+    },
+    socials: {
+        linkedin: String,
+        instagram: String
     }
 }, {
     timestamps: true

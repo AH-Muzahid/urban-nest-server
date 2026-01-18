@@ -11,15 +11,21 @@ const {
 } = require('../controllers/propertyController');
 const { protect } = require('../middlewares/authMiddleware');
 
+// Re-route into other resource routers
+const reviewRouter = require('./reviewRoutes');
+router.use('/:propertyId/reviews', reviewRouter);
+
 // Public routes
 router.get('/', getProperties);
 router.get('/featured', getFeaturedProperties);
-router.get('/:id', getPropertyById);
 
-// Protected routes
+// Protected routes (place specific routes before generic :id)
+router.get('/user/my-properties', protect, getUserProperties);
 router.post('/', protect, createProperty);
+
+// Routes with ID parameter
+router.get('/:id', getPropertyById);
 router.put('/:id', protect, updateProperty);
 router.delete('/:id', protect, deleteProperty);
-router.get('/user/my-properties', protect, getUserProperties);
 
 module.exports = router;

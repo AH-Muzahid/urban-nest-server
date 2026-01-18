@@ -93,6 +93,21 @@ exports.updateProfile = async (req, res) => {
             user.name = req.body.name || user.name;
             user.email = req.body.email || user.email;
             user.phone = req.body.phone || user.phone;
+            user.avatar = req.body.avatar !== undefined ? req.body.avatar : user.avatar;
+            user.bio = req.body.bio !== undefined ? req.body.bio : user.bio;
+            user.license = req.body.license !== undefined ? req.body.license : user.license;
+            user.experience = req.body.experience !== undefined ? req.body.experience : user.experience;
+            user.location = req.body.location !== undefined ? req.body.location : user.location;
+
+            if (req.body.specialties) {
+                user.specialties = req.body.specialties;
+            }
+            if (req.body.socials) {
+                user.socials = {
+                    ...user.socials,
+                    ...req.body.socials
+                };
+            }
 
             if (req.body.password) {
                 user.password = req.body.password;
@@ -106,11 +121,91 @@ exports.updateProfile = async (req, res) => {
                 email: updatedUser.email,
                 role: updatedUser.role,
                 phone: updatedUser.phone,
+                avatar: updatedUser.avatar,
+                bio: updatedUser.bio,
+                specialties: updatedUser.specialties,
+                license: updatedUser.license,
+                experience: updatedUser.experience,
+                location: updatedUser.location,
+                socials: updatedUser.socials,
                 token: generateToken(updatedUser._id)
             });
         } else {
             res.status(404).json({ message: 'User not found' });
         }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Google Login/Register
+// @route   POST /api/auth/google
+// @access  Public
+exports.googleLogin = async (req, res) => {
+    try {
+        const { email, name, googleId, avatar } = req.body;
+
+        // Check if user exists
+        let user = await User.findOne({ email });
+
+        if (user) {
+            // User exists, update avatar if missing
+            if (!user.avatar && avatar) {
+                user.avatar = avatar;
+                await user.save();
+            }
+        } else {
+            // Create user with random password
+            const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+            user = await User.create({
+                name,
+                email,
+                password: generatedPassword,
+                avatar,
+                // googleId // You can add this field to your schema if you want to track it
+            });
+        }
+
+        res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            avatar: user.avatar,
+            token: generateToken(user._id)
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Change user password
+// @route   PUT /api/auth/change-password
+// @access  Private
+exports.changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+
+        // Get user with password selected
+        const user = await User.findById(req.user._id).select('+password');
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Verify current password
+        if (!(await user.comparePassword(currentPassword))) {
+            return res.status(401).json({ message: 'Invalid current password' });
+        }
+
+        // Update password
+        user.password = newPassword;
+        await user.save();
+
+        res.json({
+            message: 'Password updated successfully',
+            token: generateToken(user._id)
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -22,15 +22,31 @@ const propertySchema = new mongoose.Schema({
         required: [true, 'Please provide a location'],
         trim: true
     },
+    coordinates: {
+        lat: {
+            type: Number,
+            default: 0
+        },
+        lng: {
+            type: Number,
+            default: 0
+        }
+    },
     type: {
         type: String,
         required: [true, 'Please provide a property type'],
-        enum: ['house', 'apartment', 'condo', 'villa', 'land'],
+        enum: ['house', 'apartment', 'condo', 'villa', 'land', 'penthouse', 'mansion', 'estate'],
         default: 'house'
+    },
+    listingType: {
+        type: String,
+        enum: ['sale', 'rent'],
+        default: 'sale',
+        index: true
     },
     status: {
         type: String,
-        enum: ['available', 'pending', 'sold'],
+        enum: ['available', 'pending', 'sold', 'draft'],
         default: 'available'
     },
     bedrooms: {
@@ -58,6 +74,14 @@ const propertySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    averageRating: {
+        type: Number,
+        default: 0
+    },
+    numReviews: {
+        type: Number,
+        default: 0
     },
     views: {
         type: Number,
