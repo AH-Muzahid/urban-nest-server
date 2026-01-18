@@ -8,6 +8,18 @@ const userRoutes = require('./routes/userRoutes');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 
 const app = express();
+const connectDB = require('./config/db');
+
+// Database Connection Middleware for Serverless
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        console.error('Database Connection Failed:', error);
+        res.status(500).json({ message: 'Internal Server Error: Database Connection Failed' });
+    }
+});
 
 // Middleware
 app.use(cors({

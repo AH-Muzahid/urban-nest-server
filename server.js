@@ -5,7 +5,7 @@ const connectDB = require('./src/config/db');
 const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB
-connectDB();
+// Connect to MongoDB handled in app.js middleware
 
 // Start server only if run directly
 if (require.main === module) {
